@@ -1,8 +1,8 @@
 // firebase.init.js
 const { initializeApp } = require('firebase/app');
 const { getFirestore } = require('firebase/firestore');
-const { getStorage } = require('firebase/storage'); // If you will be working with storage, add this
-require('dotenv').config(); //Import the dotenv library to access the .env file
+const { getStorage } = require('firebase/storage');
+require('dotenv').config();
 
 const firebaseConfig = {
     apiKey: process.env.FIREBASE_API_KEY, // These values will come from .env file.  See instruction below
@@ -16,6 +16,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const storage = getStorage(app) // If you are using storage
-module.exports = { db, storage }; // Export db for use in your app
+const storage = getStorage(app)
+module.exports = { db, storage };
 
