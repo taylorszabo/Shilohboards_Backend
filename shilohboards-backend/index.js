@@ -1,5 +1,5 @@
 const admin = require('firebase-admin');
-const serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+const serviceAccount = require("C:\\Users\\logan\\OneDrive\\ConestogaCollege\\INFO3190\\Shilohboards_Backend\\shilohboards-backend\\serviceAccountKey.json");
 
 try {
     admin.initializeApp({
@@ -21,55 +21,18 @@ app.use(bodyParser.json());
 app.use(cors());
 
 
-app.post('/signup', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const userRecord = await admin.auth().createUser({
-            email: email,
-            password: password,
-        });
-        console.log('Successfully created new user:', userRecord.uid);
-        res.status(201).send({ message: 'User created successfully' });
-    } catch (error) {
-        console.error('Error creating user:', error);
-        res.status(500).send({ error: error.message });
-    }
-});
-
-app.post("/login", async (req, res) => {
-    const { idToken } = req.body;
-
-    if (!idToken) {
-        return res.status(400).json({ error: "ID token is required" });
-    }
-
-    try {
-        const decodedToken = await admin.auth().verifyIdToken(idToken);
-        return res.json({
-            message: "Login successful",
-            uid: decodedToken.uid,
-            email: decodedToken.email,
-        });
-    } catch (error) {
-        return res.status(401).json({ error: "Invalid token", details: error.message });
-    }
-});
-
-
 app.post('/create-parent', async (req, res) => {
     try {
-        const { email, displayName, password } = req.body;
+        const { email, password } = req.body;
 
         const userRecord = await admin.auth().createUser({
             email,
-            displayName,
             password,
         });
 
         await db.collection('users').doc(userRecord.uid).set({
             id: userRecord.uid,
             email,
-            display_name: displayName,
             role: 'parent',
             created_at: admin.firestore.FieldValue.serverTimestamp(),
         });
@@ -102,6 +65,24 @@ app.post('/create-child', async (req, res) => {
     }
 });
 
+app.post("/login", async (req, res) => {
+    const { idToken } = req.body;
+
+    if (!idToken) {
+        return res.status(400).json({ error: "ID token is required" });
+    }
+
+    try {
+        const decodedToken = await admin.auth().verifyIdToken(idToken);
+        return res.json({
+            message: "Login successful",
+            uid: decodedToken.uid,
+            email: decodedToken.email,
+        });
+    } catch (error) {
+        return res.status(401).json({ error: "Invalid token", details: error.message });
+    }
+});
 
 app.get('/users', async (req, res) => {
     try {
@@ -109,6 +90,17 @@ app.get('/users', async (req, res) => {
         const users = usersSnapshot.docs.map(doc => doc.data());
 
         res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/children', async (req, res) => {
+    try {
+        const childrenSnapshot = await db.collection('children').get();
+        const children = childrenSnapshot.docs.map(doc => doc.data());
+
+        res.status(200).json(children);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
