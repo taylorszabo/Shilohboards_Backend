@@ -14,12 +14,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
-
 const app = express();
 const db = admin.firestore();
 app.use(bodyParser.json());
 app.use(cors());
-
 
 app.post('/create-parent', async (req, res) => {
     try {
@@ -42,7 +40,6 @@ app.post('/create-parent', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-
 
 app.post('/create-child', async (req, res) => {
     try {
@@ -105,7 +102,6 @@ app.get('/children', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
