@@ -25,8 +25,8 @@ const admin = {
         collection: jest.fn(() => ({
             doc: jest.fn(() => {
                 return {
-                    id: "mocked_child_id", // 🔥 Ensure doc().id is set correctly
-                    set: jest.fn(async () => Promise.resolve()), // Ensure this resolves properly
+                    id: "mocked_child_id",
+                    set: jest.fn(async () => Promise.resolve()),
                     get: jest.fn(async () => ({
                         exists: true,
                         data: () => ({ id: "mocked_doc", email: "mockuser@example.com" }),

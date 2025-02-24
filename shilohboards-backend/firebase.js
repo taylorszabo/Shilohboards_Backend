@@ -5,7 +5,7 @@ const { getStorage } = require('firebase/storage');
 require('dotenv').config();
 
 const firebaseConfig = {
-    apiKey: process.env.FIREBASE_API_KEY, // These values will come from .env file.  See instruction below
+    apiKey: process.env.FIREBASE_API_KEY,
     authDomain: process.env.FIREBASE_AUTH_DOMAIN,
     projectId: process.env.FIREBASE_PROJECT_ID,
     storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
