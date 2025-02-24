@@ -103,6 +103,21 @@ app.get('/children', async (req, res) => {
     }
 });
 
+app.get('/game-over', (req, res) => {
+    const { gameType, level } = req.query;
+
+    let payload = {
+        message: "Game Over!",
+        gameType: gameType || "unknown",
+        level: level || 1,
+        score: Math.floor(Math.random() * 100),
+        accuracy: (Math.random() * 100).toFixed(2) + "%",
+        rewardsEarned: ["Star Badge", "New Avatar"],
+    };
+
+    res.json(payload);
+});
+
 if (require.main === module) {
     const port = process.env.PORT || 3000;
     app.listen(port, () => {
