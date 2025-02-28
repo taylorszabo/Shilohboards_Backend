@@ -17,7 +17,7 @@ const cors = require('cors');
 const app = express();
 const db = admin.firestore();
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors({ origin: '*' }));
 
 app.post('/create-parent', async (req, res) => {
     try {
@@ -107,12 +107,12 @@ app.get('/game-over', (req, res) => {
     const { gameType, level } = req.query;
 
     let payload = {
-        message: "Game Over!",
+        message: "Game Complete!",
         gameType: gameType || "unknown",
         level: level || 1,
         score: Math.floor(Math.random() * 100),
         accuracy: (Math.random() * 100).toFixed(2) + "%",
-        rewardsEarned: ["Star Badge", "New Avatar"],
+        rewardsEarned: ["Star"],
     };
 
     res.json(payload);
