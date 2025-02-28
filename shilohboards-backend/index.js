@@ -151,7 +151,7 @@ app.get('/game-over', (req, res) => {
 
 const allLetters = Object.keys(alphabetData);
 
-// let playerScores = {};
+// let childScore = {};
 app.get("/alphabet/level1", (req, res) => {
     const letter = allLetters[Math.floor(Math.random() * allLetters.length)];
     const { object, sound, image } = alphabetData[letter];
@@ -165,6 +165,53 @@ app.get("/alphabet/level1", (req, res) => {
         objectImage: `assets/images/objects/${image}`,
     });
 });
+
+app.get("/alphabet/level2", (req, res) => {
+    const letter = allLetters[Math.floor(Math.random() * allLetters.length)];
+    const correctObject = alphabetData[letter].object;
+    const correctImage = alphabetData[letter].image;
+
+    let incorrectObjects = allLetters
+        .filter((l) => l !== letter)
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 2)
+        .map((l) => ({
+            object: alphabetData[l].object,
+            image: alphabetData[l].image,
+        }));
+
+    res.json({
+        level: 2,
+        letter,
+        voice: `/audio/letters/${letter}.mp3`,
+        options: [
+            { object: correctObject, image: correctImage, correct: true },
+            ...incorrectObjects.map((obj) => ({ ...obj, correct: false })),
+        ].sort(() => Math.random() - 0.5), // Randomize order
+    });
+});
+
+app.get("/alphabet/level3", (req, res) => {
+    const letter = allLetters[Math.floor(Math.random() * allLetters.length)];
+    const correctWord = alphabetData[letter].object;
+    const letterSound = alphabetData[letter].sound;
+
+    let incorrectLetters = allLetters
+        .filter((l) => l !== letter)
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 3);
+
+    res.json({
+        level: 3,
+        sound: `/audio/sounds/${letterSound}`,
+        wordExample: correctWord,
+        options: [
+            { letter, correct: true },
+            ...incorrectLetters.map((l) => ({ letter: l, correct: false })),
+        ].sort(() => Math.random() - 0.5), // Randomize order
+    });
+});
+
 
 if (require.main === module) {
     const port = process.env.PORT || 3000;
