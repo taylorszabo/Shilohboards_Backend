@@ -151,7 +151,6 @@ app.get('/game-over', (req, res) => {
 
 const allLetters = Object.keys(alphabetData);
 
-// let childScore = {};
 app.get("/alphabet/level1", (req, res) => {
     const letter = allLetters[Math.floor(Math.random() * allLetters.length)];
     const { object, sound, image } = alphabetData[letter];
@@ -212,6 +211,53 @@ app.get("/alphabet/level3", (req, res) => {
     });
 });
 
+app.post("/alphabet/score", async (req, res) => {
+    try {
+        const { childId, level, scoreChange } = req.body;
+
+        if (!childId || !level || typeof scoreChange !== "number") {
+            return res.status(400).json({ error: "Invalid request data" });
+        }
+
+        const childRef = db.collection("childScores").doc(childId);
+        const childDoc = await childRef.get();
+
+        let scores = { level1: 0, level2: 0, level3: 0 };
+
+        if (childDoc.exists) {
+            scores = childDoc.data().scores;
+        }
+
+        scores[`level${level}`] = (scores[`level${level}`] || 0) + scoreChange;
+
+        await childRef.set({ childId, scores });
+
+        res.json({
+            childId,
+            scores,
+        });
+    } catch (error) {
+        console.error("Error updating score:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+app.get("/alphabet/score/:childId", async (req, res) => {
+    try {
+        const { childId } = req.params;
+        const childRef = db.collection("childScores").doc(childId);
+        const childDoc = await childRef.get();
+
+        if (!childDoc.exists) {
+            return res.status(404).json({ error: "Child not found" });
+        }
+
+        res.json(childDoc.data());
+    } catch (error) {
+        console.error("Error retrieving score:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
 
 if (require.main === module) {
     const port = process.env.PORT || 3000;
