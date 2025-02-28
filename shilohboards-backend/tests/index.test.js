@@ -73,4 +73,49 @@ describe("API Tests", () => {
         expect(response.body).toHaveProperty("message", "Login successful");
         expect(response.body).toHaveProperty("uid", "mocked_uid");
     });
+
+    it("should return default values if no query parameters are provided", async () => {
+        const response = await request(app).get("/game-over");
+
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty("message", "Game Complete!");
+        expect(response.body).toHaveProperty("gameType", "unknown");
+        expect(response.body).toHaveProperty("level", 1);
+        expect(response.body).toHaveProperty("score");
+        expect(response.body).toHaveProperty("accuracy");
+        expect(response.body).toHaveProperty("rewardsEarned");
+        expect(Array.isArray(response.body.rewardsEarned)).toBe(true);
+    });
+
+    it("should return the correct gameType and level from query params", async () => {
+        const response = await request(app).get("/game-over").query({
+            gameType: "puzzle",
+            level: 5
+        });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty("gameType", "puzzle");
+        expect(response.body).toHaveProperty("level", "5");
+    });
+
+    it("should generate a valid score and accuracy", async () => {
+        const response = await request(app).get("/game-over");
+
+        expect(response.status).toBe(200);
+        expect(response.body.score).toBeGreaterThanOrEqual(0);
+        expect(response.body.score).toBeLessThanOrEqual(100);
+
+        // Check accuracy format
+        expect(typeof response.body.accuracy).toBe("string");
+        expect(response.body.accuracy).toMatch(/^\d+\.\d{2}%$/);
+    });
+
+    it("should include rewardsEarned array with 'Star'", async () => {
+        const response = await request(app).get("/game-over");
+
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty("rewardsEarned");
+        expect(Array.isArray(response.body.rewardsEarned)).toBe(true);
+        expect(response.body.rewardsEarned).toContain("Star");
+    });
 });
