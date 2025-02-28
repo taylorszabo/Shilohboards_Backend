@@ -1,5 +1,7 @@
 const admin = require('firebase-admin');
-const serviceAccount = require("C:\\Users\\logan\\OneDrive\\ConestogaCollege\\INFO3190\\Shilohboards_Backend\\shilohboards-backend\\serviceAccountKey.json");
+require('dotenv').config();
+
+const serviceAccount = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
 
 try {
     admin.initializeApp({
@@ -17,7 +19,7 @@ const cors = require('cors');
 const app = express();
 const db = admin.firestore();
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors({ origin: '*' }));
 
 app.post('/create-parent', async (req, res) => {
     try {
@@ -101,6 +103,21 @@ app.get('/children', async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
+});
+
+app.get('/game-over', (req, res) => {
+    const { gameType, level } = req.query;
+
+    let payload = {
+        message: "Game Complete!",
+        gameType: gameType || "unknown",
+        level: level || 1,
+        score: Math.floor(Math.random() * 100),
+        accuracy: (Math.random() * 100).toFixed(2) + "%",
+        rewardsEarned: ["Star"],
+    };
+
+    res.json(payload);
 });
 
 if (require.main === module) {
