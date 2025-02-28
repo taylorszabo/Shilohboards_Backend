@@ -21,6 +21,35 @@ const db = admin.firestore();
 app.use(bodyParser.json());
 app.use(cors({ origin: '*' }));
 
+const alphabetData = {
+    A: { object: "Apple", sound: "a.mp3", image: "Apple.png"},
+    B: { object: "Balloon", sound: "b.mp3", image: "Balloon.png"},
+    C: { object: "Car", sound: "c.mp3", image: "Car.png"},
+    D: { object: "Drum", sound: "d.mp3", image: "Drum.png"},
+    E: { object: "Egg", sound: "e.mp3", image: "Egg.png"},
+    F: { object: "Flower", sound: "f.mp3", image: "Flower.png"},
+    G: { object: "Guitar", sound: "g.mp3", image: "Guitar.png"},
+    H: { object: "Hotdog", sound: "h.mp3", image: "Hotdog.png"},
+    I: { object: "Igloo", sound: "i.mp3", image: "Igloo.png"},
+    J: { object: "Jam", sound: "j.mp3", image: "Jam.png"},
+    K: { object: "Kite", sound: "k.mp3", image: "Kite.png"},
+    L: { object: "Leaf", sound: "l.mp3", image: "Leaf.png"},
+    M: { object: "Moon", sound: "m.mp3", image: "Moon.png"},
+    N: { object: "Nest", sound: "n.mp3", image: "Nest.png"},
+    O: { object: "Orange", sound: "o.mp3", image: "Orange.png"},
+    P: { object: "Penguin", sound: "p.mp3", image: "Penguin.png"},
+    Q: { object: "Queen", sound: "q.mp3", image: "Queen.png"},
+    R: { object: "Rainbow", sound: "r.mp3", image: "Rainbow.png"},
+    S: { object: "Sun", sound: "s.mp3", image: "Sun.png"},
+    T: { object: "Tree", sound: "t.mp3", image: "Tree.png"},
+    U: { object: "Umbrella", sound: "u.mp3", image: "Umbrella.png"},
+    V: { object: "Violin", sound: "v.mp3", image: "Violin.png"},
+    W: { object: "Whale", sound: "w.mp3", image: "Whale.png"},
+    X: { object: "Xray", sound: "x.mp3", image: "Xray.png"},
+    Y: { object: "Yarn", sound: "y.mp3", image: "Yarn.png"},
+    Z: { object: "Zipper", sound: "z.mp3", image: "Zipper.png"},
+};
+
 app.post('/create-parent', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -118,6 +147,23 @@ app.get('/game-over', (req, res) => {
     };
 
     res.json(payload);
+});
+
+const allLetters = Object.keys(alphabetData);
+
+// let playerScores = {};
+app.get("/alphabet/level1", (req, res) => {
+    const letter = allLetters[Math.floor(Math.random() * allLetters.length)];
+    const { object, sound, image } = alphabetData[letter];
+
+    res.json({
+        level: 1,
+        letter,
+        voice: `assets/audio/letters/${letter}.mp3`,
+        object,
+        objectVoice: `assets/audio/objects/${sound}`,
+        objectImage: `assets/images/objects/${image}`,
+    });
 });
 
 if (require.main === module) {
