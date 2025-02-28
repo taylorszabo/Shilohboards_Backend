@@ -1,5 +1,7 @@
 const admin = require('firebase-admin');
-const serviceAccount = require("C:\\Users\\logan\\OneDrive\\ConestogaCollege\\INFO3190\\Shilohboards_Backend\\shilohboards-backend\\serviceAccountKey.json");
+require('dotenv').config();
+
+const serviceAccount = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
 
 try {
     admin.initializeApp({
