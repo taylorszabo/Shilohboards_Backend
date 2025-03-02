@@ -25,7 +25,8 @@ const admin = {
         const mockChildScores = {
             mocked_child_id: {
                 childId: "mocked_child_id",
-                scores: { level1: 0, level2: 0, level3: 0 }
+                alphabetScores: { level1: 0, level2: 0, level3: 0 },
+                numbersScores: { level1: 0, level2: 0 }
             },
         };
 
@@ -35,10 +36,28 @@ const admin = {
                     id,
                     get: jest.fn(async () => ({
                         exists: !!mockChildScores[id],
-                        data: () => mockChildScores[id] || { scores: { level1: 0, level2: 0, level3: 0 } }, // Provide default if missing
+                        data: () => mockChildScores[id] || {
+                            childId: id,
+                            alphabetScores: { level1: 0, level2: 0, level3: 0 },
+                            numbersScores: { level1: 0, level2: 0 }
+                        },
                     })),
                     set: jest.fn(async (data) => {
-                        mockChildScores[id] = data;
+                        if (!mockChildScores[id]) {
+                            mockChildScores[id] = { childId: id };
+                        }
+                        if (data.alphabetScores) {
+                            mockChildScores[id].alphabetScores = {
+                                ...mockChildScores[id].alphabetScores,
+                                ...data.alphabetScores,
+                            };
+                        }
+                        if (data.numbersScores) {
+                            mockChildScores[id].numbersScores = {
+                                ...mockChildScores[id].numbersScores,
+                                ...data.numbersScores,
+                            };
+                        }
                         return Promise.resolve();
                     }),
                 })),

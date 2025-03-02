@@ -177,13 +177,13 @@ describe("Alphabet API Tests", () => {
 
     it("should update the child's score", async () => {
         const response = await request(app).post("/alphabet/score").send({
-            childId: "mocked_child_id",
+            childId: "child_id",
             level: 1,
             scoreChange: 10,
         });
 
         expect(response.status).toBe(200);
-        expect(response.body).toHaveProperty("childId", "mocked_child_id");
+        expect(response.body).toHaveProperty("childId", "child_id");
         expect(response.body.scores).toHaveProperty("level1", 10);
     });
 
@@ -198,15 +198,20 @@ describe("Alphabet API Tests", () => {
         expect(response.body).toHaveProperty("error", "Invalid request data");
     });
 
-    it("should retrieve the child's score", async () => {
+    test("Should retrieve the child's scores", async () => {
         const response = await request(app).get("/alphabet/score/mocked_child_id");
 
         expect(response.status).toBe(200);
+
         expect(response.body).toHaveProperty("childId", "mocked_child_id");
-        expect(response.body.scores).toHaveProperty("level1");
-        expect(response.body.scores).toHaveProperty("level2");
-        expect(response.body.scores).toHaveProperty("level3");
+
+        expect(response.body).toHaveProperty("scores");
+
+        expect(response.body.scores).toHaveProperty("level1", 0);
+        expect(response.body.scores).toHaveProperty("level2", 0);
+        expect(response.body.scores).toHaveProperty("level3", 0);
     });
+
 
     it("should return 404 if child does not exist", async () => {
         const response = await request(app).get("/alphabet/score/non_existent_child");
