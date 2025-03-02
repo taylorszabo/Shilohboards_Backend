@@ -118,4 +118,100 @@ describe("API Tests", () => {
         expect(Array.isArray(response.body.rewardsEarned)).toBe(true);
         expect(response.body.rewardsEarned).toContain("Star");
     });
+
+});
+
+const mockLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+const mockAlphabetData = {};
+mockLetters.forEach((letter) => {
+    mockAlphabetData[letter] = {
+        object: `Object-${letter}`,
+        sound: `${letter.toLowerCase()}.mp3`,
+        image: `${letter.toLowerCase()}.png`,
+    };
+});
+
+global.allLetters = mockLetters;
+global.alphabetData = mockAlphabetData;
+
+describe("Alphabet API Tests", () => {
+    it("should return a random letter with correct level 1 data", async () => {
+        const response = await request(app).get("/alphabet/level1");
+
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty("level", 1);
+        expect(mockLetters).toContain(response.body.letter);
+        expect(response.body).toHaveProperty("voice");
+        expect(response.body).toHaveProperty("object");
+        expect(response.body).toHaveProperty("objectVoice");
+        expect(response.body).toHaveProperty("objectImage");
+    });
+
+    it("should return letter with three object options for level 2", async () => {
+        const response = await request(app).get("/alphabet/level2");
+
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty("level", 2);
+        expect(mockLetters).toContain(response.body.letter);
+        expect(response.body).toHaveProperty("voice");
+        expect(response.body).toHaveProperty("options");
+        expect(Array.isArray(response.body.options)).toBe(true);
+        expect(response.body.options.length).toBe(3);
+        expect(response.body.options.some(opt => opt.correct)).toBe(true);
+    });
+
+
+    it("should return a sound and letter options for level 3", async () => {
+        const response = await request(app).get("/alphabet/level3");
+
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty("level", 3);
+        expect(response.body).toHaveProperty("sound");
+        expect(response.body).toHaveProperty("wordExample");
+        expect(response.body).toHaveProperty("options");
+        expect(Array.isArray(response.body.options)).toBe(true);
+        expect(response.body.options.length).toBe(4);
+        expect(response.body.options.some(opt => opt.correct)).toBe(true);
+    });
+
+    it("should update the child's score", async () => {
+        const response = await request(app).post("/alphabet/score").send({
+            childId: "mocked_child_id",
+            level: 1,
+            scoreChange: 10,
+        });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty("childId", "mocked_child_id");
+        expect(response.body.scores).toHaveProperty("level1", 10);
+    });
+
+    it("should return 400 error for invalid score update data", async () => {
+        const response = await request(app).post("/alphabet/score").send({
+            childId: "",
+            level: "",
+            scoreChange: "not_a_number",
+        });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty("error", "Invalid request data");
+    });
+
+    it("should retrieve the child's score", async () => {
+        const response = await request(app).get("/alphabet/score/mocked_child_id");
+
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty("childId", "mocked_child_id");
+        expect(response.body.scores).toHaveProperty("level1");
+        expect(response.body.scores).toHaveProperty("level2");
+        expect(response.body.scores).toHaveProperty("level3");
+    });
+
+    it("should return 404 if child does not exist", async () => {
+        const response = await request(app).get("/alphabet/score/non_existent_child");
+
+        expect(response.status).toBe(404);
+        expect(response.body).toHaveProperty("error", "Child not found");
+    });
 });
