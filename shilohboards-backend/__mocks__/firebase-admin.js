@@ -21,33 +21,37 @@ const admin = {
         }),
     })),
 
-    firestore: jest.fn(() => ({
-        collection: jest.fn(() => ({
-            doc: jest.fn(() => {
-                return {
-                    id: "mocked_child_id",
-                    set: jest.fn(async () => Promise.resolve()),
+    firestore: jest.fn(() => {
+        const mockChildScores = {
+            mocked_child_id: {
+                childId: "mocked_child_id",
+                scores: { level1: 0, level2: 0, level3: 0 }
+            },
+        };
+
+        return {
+            collection: jest.fn(() => ({
+                doc: jest.fn((id) => ({
+                    id,
                     get: jest.fn(async () => ({
-                        exists: true,
-                        data: () => ({ id: "mocked_doc", email: "mockuser@example.com" }),
+                        exists: !!mockChildScores[id],
+                        data: () => mockChildScores[id] || { scores: { level1: 0, level2: 0, level3: 0 } }, // Provide default if missing
                     })),
-                };
-            }),
-            get: jest.fn(async () => ({
-                docs: [
-                    {
-                        data: () => ({ id: "mocked_user", email: "mockuser@example.com" }),
-                    },
-                ],
+                    set: jest.fn(async (data) => {
+                        mockChildScores[id] = data;
+                        return Promise.resolve();
+                    }),
+                })),
             })),
-        })),
-    })),
+        };
+    }),
 
     FieldValue: {
         serverTimestamp: jest.fn(() => new Date()),
     },
 };
 
+// Attach FieldValue to Firestore
 admin.firestore.FieldValue = admin.FieldValue;
 
 module.exports = admin;
