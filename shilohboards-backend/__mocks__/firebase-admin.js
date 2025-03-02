@@ -51,7 +51,6 @@ const admin = {
     },
 };
 
-// Attach FieldValue to Firestore
 admin.firestore.FieldValue = admin.FieldValue;
 
 module.exports = admin;
