@@ -317,7 +317,7 @@ app.get("/numbers/level2", (req, res) => {
         options: [
             { number, correct: true },
             ...incorrectNumbers.map((n) => ({ number: n, correct: false })),
-        ].sort(() => Math.random() - 0.5), // Randomize order
+        ].sort(() => Math.random() - 0.5),
     });
 });
 

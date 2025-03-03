@@ -10,7 +10,7 @@ const admin = {
             if (!email || !password) {
                 throw new Error("Invalid user data");
             }
-            return { uid: "mocked_uid", email };
+            return { uid: `mocked_uid_${Math.floor(Math.random() * 1000)}`, email };
         }),
 
         verifyIdToken: jest.fn(async (idToken) => {
@@ -22,44 +22,69 @@ const admin = {
     })),
 
     firestore: jest.fn(() => {
+        // Store users, children, and scores
+        const mockUsers = [];
+        const mockChildren = [];
         const mockChildScores = {
             mocked_child_id: {
                 childId: "mocked_child_id",
                 alphabetScores: { level1: 0, level2: 0, level3: 0 },
-                numbersScores: { level1: 0, level2: 0 }
+                numbersScores: { level1: 0, level2: 0 },
             },
         };
 
         return {
-            collection: jest.fn(() => ({
-                doc: jest.fn((id) => ({
-                    id,
-                    get: jest.fn(async () => ({
-                        exists: !!mockChildScores[id],
-                        data: () => mockChildScores[id] || {
-                            childId: id,
-                            alphabetScores: { level1: 0, level2: 0, level3: 0 },
-                            numbersScores: { level1: 0, level2: 0 }
-                        },
-                    })),
-                    set: jest.fn(async (data) => {
-                        if (!mockChildScores[id]) {
-                            mockChildScores[id] = { childId: id };
-                        }
-                        if (data.alphabetScores) {
-                            mockChildScores[id].alphabetScores = {
-                                ...mockChildScores[id].alphabetScores,
-                                ...data.alphabetScores,
-                            };
-                        }
-                        if (data.numbersScores) {
-                            mockChildScores[id].numbersScores = {
-                                ...mockChildScores[id].numbersScores,
-                                ...data.numbersScores,
-                            };
-                        }
-                        return Promise.resolve();
-                    }),
+            collection: jest.fn((name) => ({
+                doc: jest.fn((id) => {
+                    if (!id) id = `mocked_${name}_id_${Math.floor(Math.random() * 1000)}`;
+
+                    return {
+                        id,
+                        get: jest.fn(async () => {
+                            if (name === "users") {
+                                const user = mockUsers.find((u) => u.id === id);
+                                return { exists: !!user, data: () => user };
+                            }
+
+                            if (name === "children") {
+                                const child = mockChildren.find((c) => c.id === id);
+                                return { exists: !!child, data: () => child };
+                            }
+
+                            if (name === "childScores") {
+                                return {
+                                    exists: !!mockChildScores[id],
+                                    data: () => mockChildScores[id] || {
+                                        alphabetScores: { level1: 0, level2: 0, level3: 0 },
+                                        numbersScores: { level1: 0, level2: 0 },
+                                    },
+                                };
+                            }
+
+                            return { exists: false };
+                        }),
+                        set: jest.fn(async (data, options) => {
+                            if (name === "users") {
+                                const existingUser = mockUsers.find((u) => u.id === id);
+                                if (existingUser) Object.assign(existingUser, data);
+                                else mockUsers.push({ id, ...data });
+                            } else if (name === "children") {
+                                const existingChild = mockChildren.find((c) => c.id === id);
+                                if (existingChild) Object.assign(existingChild, data);
+                                else mockChildren.push({ id, ...data });
+                            } else if (name === "childScores") {
+                                mockChildScores[id] = options?.merge
+                                    ? { ...(mockChildScores[id] || {}), ...data }
+                                    : data;
+                            }
+                            return Promise.resolve();
+                        }),
+                    };
+                }),
+                get: jest.fn(async () => ({
+                    docs: name === "users"
+                        ? mockUsers.map((user) => ({ data: () => user }))
+                        : mockChildren.map((child) => ({ data: () => child })),
                 })),
             })),
         };
