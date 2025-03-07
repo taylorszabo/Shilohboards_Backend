@@ -3,32 +3,32 @@ const { db } = require("../config/firebase");
 const router = express.Router();
 
 const alphabetData = {
-    A: { object: "Apple", sound: "a.mp3", image: "Apple.png"},
-    B: { object: "Balloon", sound: "b.mp3", image: "Balloon.png"},
-    C: { object: "Car", sound: "c.mp3", image: "Car.png"},
-    D: { object: "Drum", sound: "d.mp3", image: "Drum.png"},
-    E: { object: "Egg", sound: "e.mp3", image: "Egg.png"},
-    F: { object: "Flower", sound: "f.mp3", image: "Flower.png"},
-    G: { object: "Guitar", sound: "g.mp3", image: "Guitar.png"},
-    H: { object: "Hotdog", sound: "h.mp3", image: "Hotdog.png"},
-    I: { object: "Igloo", sound: "i.mp3", image: "Igloo.png"},
-    J: { object: "Jam", sound: "j.mp3", image: "Jam.png"},
-    K: { object: "Kite", sound: "k.mp3", image: "Kite.png"},
-    L: { object: "Leaf", sound: "l.mp3", image: "Leaf.png"},
-    M: { object: "Moon", sound: "m.mp3", image: "Moon.png"},
-    N: { object: "Nest", sound: "n.mp3", image: "Nest.png"},
-    O: { object: "Orange", sound: "o.mp3", image: "Orange.png"},
-    P: { object: "Penguin", sound: "p.mp3", image: "Penguin.png"},
-    Q: { object: "Queen", sound: "q.mp3", image: "Queen.png"},
-    R: { object: "Rainbow", sound: "r.mp3", image: "Rainbow.png"},
-    S: { object: "Sun", sound: "s.mp3", image: "Sun.png"},
-    T: { object: "Tree", sound: "t.mp3", image: "Tree.png"},
-    U: { object: "Umbrella", sound: "u.mp3", image: "Umbrella.png"},
-    V: { object: "Violin", sound: "v.mp3", image: "Violin.png"},
-    W: { object: "Whale", sound: "w.mp3", image: "Whale.png"},
-    X: { object: "Xray", sound: "x.mp3", image: "Xray.png"},
-    Y: { object: "Yarn", sound: "y.mp3", image: "Yarn.png"},
-    Z: { object: "Zipper", sound: "z.mp3", image: "Zipper.png"},
+    A: { object: "Apple", sound: "a.mp3", image: "A"},
+    B: { object: "Balloon", sound: "b.mp3", image: "B"},
+    C: { object: "Car", sound: "c.mp3", image: "C"},
+    D: { object: "Drum", sound: "d.mp3", image: "D"},
+    E: { object: "Egg", sound: "e.mp3", image: "E"},
+    F: { object: "Flower", sound: "f.mp3", image: "F"},
+    G: { object: "Guitar", sound: "g.mp3", image: "G"},
+    H: { object: "Hotdog", sound: "h.mp3", image: "H"},
+    I: { object: "Igloo", sound: "i.mp3", image: "I"},
+    J: { object: "Jam", sound: "j.mp3", image: "J"},
+    K: { object: "Kite", sound: "k.mp3", image: "K"},
+    L: { object: "Leaf", sound: "l.mp3", image: "L"},
+    M: { object: "Moon", sound: "m.mp3", image: "M"},
+    N: { object: "Nest", sound: "n.mp3", image: "N"},
+    O: { object: "Orange", sound: "o.mp3", image: "O"},
+    P: { object: "Penguin", sound: "p.mp3", image: "P"},
+    Q: { object: "Queen", sound: "q.mp3", image: "Q"},
+    R: { object: "Rainbow", sound: "r.mp3", image: "R"},
+    S: { object: "Sun", sound: "s.mp3", image: "S"},
+    T: { object: "Tree", sound: "t.mp3", image: "T"},
+    U: { object: "Umbrella", sound: "u.mp3", image: "U"},
+    V: { object: "Violin", sound: "v.mp3", image: "V"},
+    W: { object: "Whale", sound: "w.mp3", image: "W"},
+    X: { object: "Xray", sound: "x.mp3", image: "X"},
+    Y: { object: "Yarn", sound: "y.mp3", image: "Y"},
+    Z: { object: "Zipper", sound: "z.mp3", image: "Z"},
 };
 
 const allLetters = Object.keys(alphabetData);
@@ -40,106 +40,117 @@ router.get("/level1", (req, res) => {
     res.json({
         level: 1,
         letter,
-        voice: `assets/audio/letters/${letter}.mp3`,
+        voice: `assets/Alphabet/Images/Audio/AppleSound.mp3`,
         object,
-        objectVoice: `assets/audio/objects/${sound}`,
-        objectImage: `assets/images/objects/${image}`,
+        objectVoice: `assets/Alphabet/Images/Audio/AppleSound.mp3`,
+        objectImage: image,
     });
 });
 
 router.get("/level2", (req, res) => {
-    const letter = allLetters[Math.floor(Math.random() * allLetters.length)];
-    const correctObject = alphabetData[letter].object;
-    const correctImage = alphabetData[letter].image;
+    const shuffledLetters = allLetters.sort(() => Math.random() - 0.5);
 
-    let incorrectObjects = allLetters
-        .filter((l) => l !== letter)
-        .sort(() => 0.5 - Math.random())
-        .slice(0, 2)
-        .map((l) => ({
-            object: alphabetData[l].object,
-            image: alphabetData[l].image,
-        }));
+    const questions = shuffledLetters.map(letter => {
+        const correctObject = alphabetData[letter].object;
+        const correctImage = alphabetData[letter].image;
 
-    res.json({
-        level: 2,
-        letter,
-        voice: `/audio/letters/${letter}.mp3`,
-        options: [
-            { object: correctObject, image: correctImage, correct: true },
-            ...incorrectObjects.map((obj) => ({ ...obj, correct: false })),
-        ].sort(() => Math.random() - 0.5), // Randomize order
+        let incorrectObjects = allLetters
+            .filter((l) => l !== letter)
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 2)
+            .map((l) => ({
+                object: alphabetData[l].object,
+                image: alphabetData[l].image,
+                correct: false,
+            }));
+
+        return {
+            level: 2,
+            letter,
+            voice: `assets/Alphabet/Images/Audio/${letter}Sound.mp3`,
+            options: [
+                { object: correctObject, image: correctImage, correct: true },
+                ...incorrectObjects,
+            ].sort(() => Math.random() - 0.5),
+        };
     });
+
+    res.json(questions);
 });
+
+function shuffleArray(array) {
+    return array
+        .map((item) => ({ item, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ item }) => item);
+}
 
 router.get("/level3", (req, res) => {
-    const letter = allLetters[Math.floor(Math.random() * allLetters.length)];
-    const correctWord = alphabetData[letter].object;
-    const letterSound = alphabetData[letter].sound;
-
-    let incorrectLetters = allLetters
-        .filter((l) => l !== letter)
-        .sort(() => 0.5 - Math.random())
-        .slice(0, 3);
-
-    res.json({
-        level: 3,
-        sound: `/audio/sounds/${letterSound}`,
-        wordExample: correctWord,
-        options: [
-            { letter, correct: true },
-            ...incorrectLetters.map((l) => ({ letter: l, correct: false })),
-        ].sort(() => Math.random() - 0.5), // Randomize order
+    const questions = allLetters.map((letter) => {
+        return {
+            level: 3,
+            letter,
+            sound: `assets/Alphabet/Audio/${letter}Sound.mp3`,
+            wordExample: alphabetData[letter].object,
+            options: shuffleArray(
+                allLetters
+                    .filter((l) => l !== letter)
+                    .slice(0, 3)
+                    .map((l) => ({ object: alphabetData[l].object, image: alphabetData[l].image, correct: false }))
+                    .concat([{ object: alphabetData[letter].object, image: alphabetData[letter].image, correct: true }])
+            )
+        };
     });
+
+    res.json(shuffleArray(questions));
 });
+
 
 router.post("/score", async (req, res) => {
     try {
-        const { childId, level, scoreChange } = req.body;
+        const { childId, level, score, gameId } = req.body;
 
-        if (!childId || !level || typeof scoreChange !== "number") {
+        if (!childId || !level || score === undefined || !gameId) {
             return res.status(400).json({ error: "Invalid request data" });
         }
 
-        const childRef = db.collection("childScores").doc(childId);
-        const childDoc = await childRef.get();
+        const scoreRef = db.collection("alphabetScores").doc(childId);
+        const doc = await scoreRef.get();
 
-        let scores = { level1: 0, level2: 0, level3: 0 };
-
-        if (childDoc.exists) {
-            scores = childDoc.data().alphabetScores || scores;
+        if (!doc.exists) {
+            await scoreRef.set({ childId, scores: {} });
         }
 
-        scores[`level${level}`] = (scores[`level${level}`] || 0) + scoreChange;
+        await scoreRef.collection("games").doc(gameId).set({
+            level,
+            score,
+            timestamp: new Date(),
+        });
 
-        await childRef.set({ childId, alphabetScores: scores }, { merge: true });
-
-        res.json({ childId, scores });
+        return res.status(200).json({ message: "Score saved successfully", gameId });
     } catch (error) {
-        console.error("Error updating score:", error);
-        res.status(500).json({ error: "Internal server error" });
+        console.error("Error saving score:", error);
+        return res.status(500).json({ error: "Failed to save score" });
     }
 });
 
 router.get("/score/:childId", async (req, res) => {
     try {
         const { childId } = req.params;
-        const childRef = db.collection("childScores").doc(childId);
-        const childDoc = await childRef.get();
+        const scoreRef = db.collection("alphabetScores").doc(childId);
+        const doc = await scoreRef.get();
 
-        if (!childDoc.exists) {
+        if (!doc.exists) {
             return res.status(404).json({ error: "Child not found" });
         }
 
-        const scores = childDoc.data().alphabetScores || { level1: 0, level2: 0, level3: 0 };
+        const gamesSnapshot = await scoreRef.collection("games").get();
+        const games = gamesSnapshot.docs.map(doc => ({ gameId: doc.id, ...doc.data() }));
 
-        res.json({
-            childId,
-            scores,
-        });
+        return res.status(200).json({ childId, games });
     } catch (error) {
-        console.error("Firestore Error:", error);
-        res.status(500).json({ error: "Firestore access failed", details: error.message });
+        console.error("Error retrieving scores:", error);
+        return res.status(500).json({ error: "Failed to retrieve scores" });
     }
 });
 
