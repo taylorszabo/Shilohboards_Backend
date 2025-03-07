@@ -78,27 +78,33 @@ router.get("/level2", (req, res) => {
     res.json(questions);
 });
 
+function shuffleArray(array) {
+    return array
+        .map((item) => ({ item, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ item }) => item);
+}
 
 router.get("/level3", (req, res) => {
-    const letter = allLetters[Math.floor(Math.random() * allLetters.length)];
-    const correctWord = alphabetData[letter].object;
-    const letterSound = alphabetData[letter].sound;
-
-    let incorrectLetters = allLetters
-        .filter((l) => l !== letter)
-        .sort(() => 0.5 - Math.random())
-        .slice(0, 3);
-
-    res.json({
-        level: 3,
-        sound: `/audio/sounds/${letterSound}`,
-        wordExample: correctWord,
-        options: [
-            { letter, correct: true },
-            ...incorrectLetters.map((l) => ({ letter: l, correct: false })),
-        ].sort(() => Math.random() - 0.5), // Randomize order
+    const questions = allLetters.map((letter) => {
+        return {
+            level: 3,
+            letter,
+            sound: `assets/Alphabet/Audio/${letter}Sound.mp3`,
+            wordExample: alphabetData[letter].object,
+            options: shuffleArray(
+                allLetters
+                    .filter((l) => l !== letter)
+                    .slice(0, 3)
+                    .map((l) => ({ object: alphabetData[l].object, image: alphabetData[l].image, correct: false }))
+                    .concat([{ object: alphabetData[letter].object, image: alphabetData[letter].image, correct: true }])
+            )
+        };
     });
+
+    res.json(shuffleArray(questions));
 });
+
 
 router.post("/score", async (req, res) => {
     try {
