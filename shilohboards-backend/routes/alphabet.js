@@ -86,24 +86,34 @@ function shuffleArray(array) {
 
 router.get("/level3", (req, res) => {
     const questions = allLetters.map((letter) => {
+        const incorrectAnswers = shuffleArray(
+            allLetters.filter((l) => l !== letter)
+        ).slice(0, 3);
+
+        const options = [
+            ...incorrectAnswers.map((l) => ({
+                object: alphabetData[l].object,
+                image: alphabetData[l].image,
+                correct: false,
+            })),
+            {
+                object: alphabetData[letter].object,
+                image: alphabetData[letter].image,
+                correct: true,
+            },
+        ];
+
         return {
             level: 3,
             letter,
             sound: `assets/Alphabet/Audio/${letter}Sound.mp3`,
             wordExample: alphabetData[letter].object,
-            options: shuffleArray(
-                allLetters
-                    .filter((l) => l !== letter)
-                    .slice(0, 3)
-                    .map((l) => ({ object: alphabetData[l].object, image: alphabetData[l].image, correct: false }))
-                    .concat([{ object: alphabetData[letter].object, image: alphabetData[letter].image, correct: true }])
-            )
+            options: shuffleArray(options),
         };
     });
 
     res.json(shuffleArray(questions));
 });
-
 
 router.post("/score", async (req, res) => {
     try {
