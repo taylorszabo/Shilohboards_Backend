@@ -28,17 +28,17 @@ const numbersData = {
 const allNumbers = Object.keys(numbersData).map(Number);
 
 router.get("/level1", (req, res) => {
-    const number = allNumbers[Math.floor(Math.random() * allNumbers.length)];
-    const { object, sound, image } = numbersData[number];
-
-    res.json({
-        level: 1,
-        number,
-        voice: `/audio/numbers/${sound}`,
-        object,
-        objectVoice: `/audio/objects/${sound}`,
-        objectImage: image,
+    const questions = allNumbers.map((letter) => {
+        return {
+            level: 1,
+            letter,
+            voice: `assets/Numbers/Images/Audio/AppleSound.mp3`,
+            object: numbersData[letter].object,
+            objectImage: numbersData[letter].image
+        };
     });
+
+    res.json(questions);
 });
 
 router.get("/level2", (req, res) => {

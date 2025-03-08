@@ -34,17 +34,16 @@ const alphabetData = {
 const allLetters = Object.keys(alphabetData);
 
 router.get("/level1", (req, res) => {
-    const letter = allLetters[Math.floor(Math.random() * allLetters.length)];
-    const { object, sound, image } = alphabetData[letter];
-
-    res.json({
-        level: 1,
-        letter,
-        voice: `assets/Alphabet/Images/Audio/AppleSound.mp3`,
-        object,
-        objectVoice: `assets/Alphabet/Images/Audio/AppleSound.mp3`,
-        objectImage: image,
+    const questions = allLetters.map((letter) => {
+        return {
+            level: 1,
+            letter,
+            voice: `assets/Alphabet/Images/Audio/AppleSound.mp3`,
+            object: alphabetData[letter].object,
+            objectImage: alphabetData[letter].image
+        };
     });
+    res.json(questions);
 });
 
 router.get("/level2", (req, res) => {
