@@ -7,8 +7,6 @@ describe("Users API Tests", () => {
             password: "testpassword",
         });
 
-        console.log("Response Status:", response.status);
-        console.log("Response Body:", response.body);
 
         expect(response.status).toBe(201);
         expect(response.body).toHaveProperty("userId");

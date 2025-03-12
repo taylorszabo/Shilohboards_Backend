@@ -22,7 +22,6 @@ const admin = {
     })),
 
     firestore: jest.fn(() => {
-        // Store users, children, and scores
         const mockUsers = [];
         const mockChildren = [];
         const mockChildScores = {

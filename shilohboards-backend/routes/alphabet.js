@@ -47,16 +47,16 @@ router.get("/level1", (req, res) => {
 });
 
 router.get("/level2", (req, res) => {
-    const shuffledLetters = allLetters.sort(() => Math.random() - 0.5);
+    const shuffledLetters = shuffleArray(allLetters); // Shuffle once for randomness
 
     const questions = shuffledLetters.map(letter => {
         const correctObject = alphabetData[letter].object;
         const correctImage = alphabetData[letter].image;
 
-        let incorrectObjects = allLetters
-            .filter((l) => l !== letter)
-            .sort(() => 0.5 - Math.random())
-            .slice(0, 2)
+        let incorrectObjects = shuffleArray(
+            allLetters
+                .filter((l) => l !== letter) // Exclude correct answer
+        ).slice(0, 2) // Pick 2 incorrect options
             .map((l) => ({
                 object: alphabetData[l].object,
                 image: alphabetData[l].image,
@@ -67,10 +67,10 @@ router.get("/level2", (req, res) => {
             level: 2,
             letter,
             voice: `assets/Alphabet/Images/Audio/${letter}Sound.mp3`,
-            options: [
+            options: shuffleArray([
                 { object: correctObject, image: correctImage, correct: true },
                 ...incorrectObjects,
-            ].sort(() => Math.random() - 0.5),
+            ]),
         };
     });
 
