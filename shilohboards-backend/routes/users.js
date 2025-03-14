@@ -26,7 +26,7 @@ router.post('/create-parent', async (req, res) => {
 
 router.post('/create-child', async (req, res) => {
   try {
-    const { parentId, displayName, characterId } = req.body;
+    const { parentId, displayName} = req.body;
 
     const childId = db.collection('children').doc().id;
 
@@ -35,13 +35,52 @@ router.post('/create-child', async (req, res) => {
       display_name: displayName,
       role: 'child',
       parent_id: parentId,
-      character_id: characterId,
       created_at: admin.firestore.FieldValue.serverTimestamp(),
     });
 
     res.status(201).json({ message: 'Child added successfully', childId });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+router.post("/profile", async (req, res) => {
+  const { child_id, profile_name, profile_image, profile_color } = req.body;
+
+  if (!child_id || !profile_name || !profile_image || !profile_color) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
+  try {
+    const profileRef = db.collection("profiles").doc(child_id);
+    await profileRef.set({
+      profile_name,
+      profile_image,
+      profile_color,
+      created_at: admin.firestore.Timestamp.now()
+    });
+
+    return res.status(201).json({ message: "Profile created successfully" });
+  } catch (error) {
+    console.error("Error creating profile:", error);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+router.get("/profile/:child_id", async (req, res) => {
+  const { child_id } = req.params;
+
+  try {
+    const profileRef = db.collection("profiles").doc(child_id);
+    const profileDoc = await profileRef.get();
+
+    if (!profileDoc.exists) {
+      return res.status(404).json({ error: "Profile not found" });
+    }
+
+    return res.status(200).json(profileDoc.data());
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    return res.status(500).json({ error: "Server error" });
   }
 });
 

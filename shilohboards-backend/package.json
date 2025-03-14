@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "test": "set NODE_ENV=test&& jest --setupFiles ./tests/setup.js"
+    "test": "set NODE_ENV=test&& jest --setupFiles ./tests/setup.js --verbose"
   },
   "dependencies": {
     "@google-cloud/firestore": "^7.11.0",
