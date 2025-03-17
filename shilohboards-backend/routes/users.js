@@ -26,15 +26,15 @@ router.post('/create-parent', async (req, res) => {
 
 router.post('/create-child', async (req, res) => {
   try {
-    const { parentId, displayName} = req.body;
+    const { parentId, profileId} = req.body;
 
     const childId = db.collection('children').doc().id;
 
     await db.collection('children').doc(childId).set({
       id: childId,
-      display_name: displayName,
       role: 'child',
       parent_id: parentId,
+      profile_id: profileId,
       created_at: admin.firestore.FieldValue.serverTimestamp(),
     });
 
@@ -45,14 +45,19 @@ router.post('/create-child', async (req, res) => {
 });
 
 router.post("/profile", async (req, res) => {
-  const { child_id, profile_name, profile_image, profile_color } = req.body;
+  let { child_id, profile_name, profile_image, profile_color } = req.body;
 
-  if (!child_id || !profile_name || !profile_image || !profile_color) {
-    return res.status(400).json({ error: "All fields are required" });
+  // Validate that child_id exists and is a string
+  if (!child_id || typeof child_id !== "string" || child_id.trim() === "") {
+    return res.status(400).json({ error: "Invalid child_id. It must be a non-empty string." });
+  }
+
+  if (!profile_name || !profile_image || !profile_color) {
+    return res.status(400).json({ error: "All fields are required." });
   }
 
   try {
-    const profileRef = db.collection("profiles").doc(child_id);
+    const profileRef = db.collection("profiles").doc(child_id.trim());
     await profileRef.set({
       profile_name,
       profile_image,
@@ -66,6 +71,7 @@ router.post("/profile", async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 });
+
 router.get("/profile/:child_id", async (req, res) => {
   const { child_id } = req.params;
 
@@ -83,6 +89,42 @@ router.get("/profile/:child_id", async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 });
+
+router.put("/profile/:child_id", async (req, res) => {
+  const { child_id } = req.params;
+  const { profile_name, profile_image, profile_color } = req.body;
+
+  if (!child_id || typeof child_id !== "string" || child_id.trim() === "") {
+    return res.status(400).json({ error: "Invalid child_id. It must be a non-empty string." });
+  }
+
+  if (!profile_name && !profile_image && !profile_color) {
+    return res.status(400).json({ error: "At least one field is required for an update." });
+  }
+
+  try {
+    const profileRef = db.collection("profiles").doc(child_id.trim());
+    const profileDoc = await profileRef.get();
+
+    if (!profileDoc.exists) {
+      return res.status(404).json({ error: "Profile not found" });
+    }
+
+    await profileRef.update({
+      ...(profile_name && { profile_name }),
+      ...(profile_image && { profile_image }),
+      ...(profile_color && { profile_color }),
+      updated_at: admin.firestore.Timestamp.now(),
+    });
+
+    return res.status(200).json({ message: "Profile updated successfully" });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 
 router.post("/login", async (req, res) => {
   const { idToken } = req.body;
@@ -124,6 +166,30 @@ router.get('/children', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+router.get('/children/:parentId', async (req, res) => {
+  try {
+    const { parentId } = req.params;
+
+    if (!parentId) {
+      return res.status(400).json({ error: "Parent ID is required" });
+    }
+
+    const childrenSnapshot = await db.collection('children').where('parent_id', '==', parentId).get();
+
+    if (childrenSnapshot.empty) {
+      return res.status(404).json({ message: "No children found for this parent." });
+    }
+
+    const children = childrenSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    res.status(200).json(children);
+  } catch (error) {
+    console.error("Error fetching children:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 module.exports = router;
 
