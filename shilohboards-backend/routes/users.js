@@ -190,6 +190,68 @@ router.get('/children/:parentId', async (req, res) => {
   }
 });
 
+router.post("/report", async (req, res) => {
+  try {
+    const { child_id, game_type, level, results } = req.body;
+
+    if (!child_id || !game_type || !level || !Array.isArray(results) || results.length === 0) {
+      return res.status(400).json({ error: "Invalid request data." });
+    }
+
+    const childRef = db.collection("performance_reports").doc(child_id);
+    const doc = await childRef.get();
+
+    let performanceData = doc.exists ? doc.data() : { total_games: 0, games: {} };
+
+    performanceData.total_games += 1;
+
+    if (!performanceData.games[game_type]) {
+      performanceData.games[game_type] = {};
+    }
+
+    if (!performanceData.games[game_type][level]) {
+      performanceData.games[game_type][level] = { attempts: 0, accuracy: {} };
+    }
+
+    performanceData.games[game_type][level].attempts += 1;
+
+    results.forEach(({ correct, id }) => {
+      if (!performanceData.games[game_type][level].accuracy[id]) {
+        performanceData.games[game_type][level].accuracy[id] = { correct: 0, attempts: 0 };
+      }
+
+      performanceData.games[game_type][level].accuracy[id].attempts += 1;
+      if (correct) {
+        performanceData.games[game_type][level].accuracy[id].correct += 1;
+      }
+    });
+
+    await childRef.set(performanceData);
+
+    res.status(200).json({ message: "Report updated successfully", data: performanceData });
+  } catch (error) {
+    console.error("Error saving report:", error);
+    res.status(500).json({ error: "Server error while saving report." });
+  }
+});
+
+router.get("/report/:child_id", async (req, res) => {
+  try {
+    const { child_id } = req.params;
+    const childRef = db.collection("performance_reports").doc(child_id);
+    const doc = await childRef.get();
+
+    if (!doc.exists) {
+      return res.status(404).json({ message: "No report found for this child." });
+    }
+
+    res.status(200).json(doc.data());
+  } catch (error) {
+    console.error("Error fetching report:", error);
+    res.status(500).json({ error: "Server error while fetching report." });
+  }
+});
+
 
 module.exports = router;
 
