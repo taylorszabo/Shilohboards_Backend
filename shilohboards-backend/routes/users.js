@@ -238,6 +238,12 @@ router.post("/report", async (req, res) => {
 router.get("/report/:child_id", async (req, res) => {
   try {
     const { child_id } = req.params;
+    const { gameType, level } = req.query;
+
+    if (!gameType || !level) {
+      return res.status(400).json({ message: "Missing gameType or level in query params." });
+    }
+
     const childRef = db.collection("performance_reports").doc(child_id);
     const doc = await childRef.get();
 
@@ -245,12 +251,50 @@ router.get("/report/:child_id", async (req, res) => {
       return res.status(404).json({ message: "No report found for this child." });
     }
 
-    res.status(200).json(doc.data());
+    const rawData = doc.data();
+    const gameData = rawData.games?.[gameType]?.[level];
+
+    if (!gameData) {
+      return res.status(200).json({
+        completedGames: 0,
+        averageScore: 0,
+        questionPerformance: {}
+      });
+    }
+
+    const accuracyMap = gameData.accuracy || {};
+    const questionPerformance = {};
+
+    let totalScore = 0;
+    let totalQuestions = 0;
+
+    for (const key in accuracyMap) {
+      const item = accuracyMap[key];
+      const attempts = item.attempts || 0;
+      const correct = item.correct || 0;
+
+      if (attempts > 0) {
+        const percent = Math.round((correct / attempts) * 100);
+        questionPerformance[key] = percent;
+        totalScore += percent;
+        totalQuestions++;
+      }
+    }
+
+    const averageScore = totalQuestions > 0 ? Math.round(totalScore / totalQuestions) : 0;
+
+    res.status(200).json({
+      completedGames: gameData.attempts || 0,
+      averageScore,
+      questionPerformance
+    });
+
   } catch (error) {
     console.error("Error fetching report:", error);
     res.status(500).json({ error: "Server error while fetching report." });
   }
 });
+
 
 
 module.exports = router;
