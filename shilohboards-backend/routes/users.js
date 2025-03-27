@@ -295,6 +295,63 @@ router.get("/report/:child_id", async (req, res) => {
   }
 });
 
+router.post("/rewards/", async (req, res) => {
+  try {
+    const { childId, category, level } = req.body;
+
+    if (!childId || !category || !level) {
+      return res.status(400).json({ message: "Missing required fields." });
+    }
+
+    const childRef = db.collection("reward_inventory").doc(childId);
+
+    // Use a nested structure like: rewards.{category}.level{level}
+    const fieldPath = `rewards.${category}.level${level}`;
+
+    await childRef.set({
+      [fieldPath]: admin.firestore.FieldValue.increment(1)
+    }, { merge: true });
+
+    res.status(200).json({ message: "Star count updated successfully." });
+  } catch (error) {
+    console.error("Error updating star count:", error);
+    res.status(500).json({ error: "Failed to update star count." });
+  }
+});
+
+router.get("/rewards/:childId", async (req, res) => {
+  try {
+    const { childId } = req.params;
+    const doc = await db.collection("reward_inventory").doc(childId).get();
+
+    if (!doc.exists) {
+      return res.status(200).json({});
+    }
+
+    const flatData = doc.data(); // Contains flattened keys
+    const nestedRewards = {};
+
+    for (const key in flatData) {
+      if (key.startsWith("rewards.")) {
+        const [, category, levelKey] = key.split(".");
+
+        if (!nestedRewards[category]) {
+          nestedRewards[category] = {};
+        }
+
+        nestedRewards[category][levelKey] = flatData[key];
+      }
+    }
+
+    res.status(200).json(nestedRewards);
+  } catch (error) {
+    console.error("Error reconstructing rewards:", error);
+    res.status(500).json({ error: "Server error while fetching rewards." });
+  }
+});
+
+
+
 
 
 module.exports = router;
