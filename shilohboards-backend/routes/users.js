@@ -44,6 +44,36 @@ router.post('/create-child', async (req, res) => {
   }
 });
 
+router.delete("/child/:profileId", async (req, res) => {
+  const { profileId } = req.params;
+
+  if (!profileId) {
+    return res.status(400).json({ message: "Missing profileId." });
+  }
+
+  try {
+    const childrenRef = db.collection("children");
+    const snapshot = await childrenRef.where("profile_id", "==", isNaN(Number(profileId)) ? profileId : Number(profileId)).get();
+
+    if (snapshot.empty) {
+      return res.status(404).json({ message: "Child not found for given profile ID." });
+    }
+
+    const childDoc = snapshot.docs[0];
+    const childId = childDoc.id;
+
+    await childrenRef.doc(childId).delete();
+
+    await db.collection("profiles").doc(childId).delete();
+
+    return res.status(200).json({ message: "Child and profile deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting child and profile:", error);
+    return res.status(500).json({ message: "Server error while deleting child." });
+  }
+});
+
+
 router.post("/profile", async (req, res) => {
   let { child_id, profile_name, profile_image, profile_color } = req.body;
 

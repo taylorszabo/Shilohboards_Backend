@@ -64,7 +64,6 @@ describe("Alphabet API Tests", () => {
         expect(Array.isArray(firstQuestion.options)).toBe(true);
         expect(firstQuestion.options.length).toBe(4);
 
-        // Ensure that exactly one correct answer exists
         const correctAnswers = firstQuestion.options.filter(option => option.correct);
         expect(correctAnswers.length).toBe(1);
     });

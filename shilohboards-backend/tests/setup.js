@@ -1,4 +1,4 @@
-jest.mock("firebase-admin"); // ✅ Mock Firebase Admin SDK
+jest.mock("firebase-admin");
 const admin = require("firebase-admin");
 
 const mockUsers = [
