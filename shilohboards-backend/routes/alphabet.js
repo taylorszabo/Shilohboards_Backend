@@ -12,7 +12,7 @@ const alphabetData = {
     G: { object: "Guitar", sound: "g.mp3", image: "G"},
     H: { object: "Hotdog", sound: "h.mp3", image: "H"},
     I: { object: "Igloo", sound: "i.mp3", image: "I"},
-    J: { object: "Jam", sound: "j.mp3", image: "J"},
+    J: { object: "Jelly", sound: "j.mp3", image: "J"},
     K: { object: "Kite", sound: "k.mp3", image: "K"},
     L: { object: "Leaf", sound: "l.mp3", image: "L"},
     M: { object: "Moon", sound: "m.mp3", image: "M"},
